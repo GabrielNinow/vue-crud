@@ -8,10 +8,6 @@ const modalTitle = ref('Create User')
 const selectedUser = ref(null)
 const users = ref([])
 
-function openModal() {
-  isModalOpen.value = true
-}
-
 function updateTable(newUser) {
   if (newUser) {
     users.value.push(newUser)
@@ -35,10 +31,6 @@ const fetchUsers = async () => {
 
 <template>
   <div class="columns is-flex-direction-column m-5 is-centered">
-    <button class="button is-pulled-left is-half is-success" @click="openModal">
-      Add User
-    </button>
-
     <TableComponent :users="users" />
 
     <ModalComponent

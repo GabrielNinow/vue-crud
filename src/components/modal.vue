@@ -6,7 +6,7 @@ const props = defineProps<{
   title: string
   isVisible: boolean
   selectedUser: {
-    id?: number // Add user ID for updates
+    id?: number
     name: string
     email: string
     tel: string
@@ -16,60 +16,56 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   (event: 'update:isVisible', value: boolean): void
-  (event: 'confirmed', user: any): void // Emit updated user data
-}>()
+  (event: 'confirmed', user: any): void
+}>();
 
-const name = ref('')
-const email = ref('')
-const tel = ref('')
-const desc = ref('')
-const emailError = ref('')
-const nameError = ref('')
-const telError = ref('')
+const name = ref('');
+const email = ref('');
+const tel = ref('');
+const desc = ref('');
+const emailError = ref('');
+const nameError = ref('');
+const telError = ref('');
 
-// Watcher para atualizar os campos com o usuário selecionado
 watch(
   () => props.selectedUser,
   user => {
     if (user) {
-      name.value = user.name
-      email.value = user.email
-      tel.value = user.tel
-      desc.value = user.desc
+      name.value = user.name;
+      email.value = user.email;
+      tel.value = user.tel;
+      desc.value = user.desc;
     } else {
-      name.value = ''
-      email.value = ''
-      tel.value = ''
-      desc.value = ''
+      resetForm();
     }
   },
-)
+);
 
-// Funções de validação
+function resetForm() {
+  name.value = '';
+  email.value = '';
+  tel.value = '';
+  desc.value = '';
+  emailError.value = '';
+  nameError.value = '';
+  telError.value = '';
+}
+
 function validateEmail(value: string) {
-  const emailPattern = /.+@.+\..+/;
-  return emailPattern.test(value);
+  return /.+@.+\..+/.test(value);
 }
 
 function validateName(value: string) {
-  const namePattern = /^[a-zA-Z\s]+$/; // Apenas letras e espaços
-  return namePattern.test(value);
+  return /^[a-zA-Z\s]+$/.test(value);
 }
 
 function validateTel(value: string) {
-  const telPattern = /^[0-9]+$/; // Apenas números
-  return telPattern.test(value);
+  return /^[0-9]+$/.test(value);
 }
 
 function close() {
-  emit('update:isVisible', false)
-  name.value = ''
-  email.value = ''
-  tel.value = ''
-  desc.value = ''
-  emailError.value = ''
-  nameError.value = ''
-  telError.value = ''
+  emit('update:isVisible', false);
+  resetForm();
 }
 
 async function confirm() {
@@ -77,40 +73,21 @@ async function confirm() {
   nameError.value = '';
   telError.value = '';
 
-  // Validações
-  if (!validateEmail(email.value)) {
-    emailError.value = 'Por favor, insira um email válido.';
-  }
+  if (!validateEmail(email.value)) emailError.value = 'Invalid email.';
+  if (!validateName(name.value)) nameError.value = 'Name cannot contain numbers.';
+  if (!validateTel(tel.value)) telError.value = 'Phone number must contain only numbers.';
 
-  if (!validateName(name.value)) {
-    nameError.value = 'O nome não pode conter números.';
-  }
+  if (emailError.value || nameError.value || telError.value) return;
 
-  if (!validateTel(tel.value)) {
-    telError.value = 'O telefone deve conter apenas números.';
-  }
-
-  if (emailError.value || nameError.value || telError.value) {
-    return; // Não prosseguir se houver erros
-  }
-
-  const formData = {
-    name: name.value,
-    email: email.value,
-    tel: tel.value,
-    desc: desc.value,
-  };
+  const formData = { name: name.value, email: email.value, tel: tel.value, desc: desc.value };
 
   try {
     let response;
     if (props.selectedUser?.id) {
       response = await axios.put(`http://localhost:3000/users/${props.selectedUser.id}`, formData);
-      console.log('User updated:', response.data);
     } else {
       response = await axios.post('http://localhost:3000/users', formData);
-      console.log('User added:', response.data);
     }
-
     emit('confirmed', response.data);
   } catch (error) {
     console.error('Error:', error);
@@ -132,67 +109,32 @@ async function confirm() {
         <div class="field">
           <label for="name" class="label">Name</label>
           <p class="control has-icons-left">
-            <input
-              id="name"
-              class="input"
-              type="text"
-              v-model="name"
-              placeholder="John Doe"
-              required
-            />
-            <span class="icon is-small is-left">
-              <font-awesome-icon :icon="['fas', 'user']" />
-            </span>
+            <input id="name" class="input" type="text" v-model="name" placeholder="John Doe" required />
+            <span class="icon is-small is-left"><font-awesome-icon :icon="['fas', 'user']" /></span>
           </p>
           <p class="help is-danger" v-if="nameError">{{ nameError }}</p>
         </div>
         <div class="field">
           <label for="email" class="label">Email</label>
           <p class="control has-icons-left">
-            <input
-              id="email"
-              class="input"
-              type="email"
-              v-model="email"
-              placeholder="Johndoe@mail.com"
-              required
-            />
-            <span class="icon is-small is-left">
-              <font-awesome-icon :icon="['fas', 'envelope']" />
-            </span>
+            <input id="email" class="input" type="email" v-model="email" placeholder="Johndoe@mail.com" required />
+            <span class="icon is-small is-left"><font-awesome-icon :icon="['fas', 'envelope']" /></span>
           </p>
           <p class="help is-danger" v-if="emailError">{{ emailError }}</p>
         </div>
         <div class="field">
           <label for="tel" class="label">Telephone</label>
           <p class="control has-icons-left">
-            <input
-              id="tel"
-              class="input"
-              type="tel"
-              v-model="tel"
-              placeholder="+99 (99) 99999-9999"
-              required
-            />
-            <span class="icon is-small is-left">
-              <font-awesome-icon :icon="['fas', 'phone']" />
-            </span>
+            <input id="tel" class="input" type="tel" v-model="tel" placeholder="+99 (99) 99999-9999" required />
+            <span class="icon is-small is-left"><font-awesome-icon :icon="['fas', 'phone']" /></span>
           </p>
           <p class="help is-danger" v-if="telError">{{ telError }}</p>
         </div>
         <div class="field">
           <label for="desc" class="label">Description</label>
           <p class="control has-icons-left">
-            <input
-              id="desc"
-              class="input"
-              type="text"
-              v-model="desc"
-              placeholder="John Doe is a person that..."
-            />
-            <span class="icon is-small is-left">
-              <font-awesome-icon :icon="['fas', 'comment']" />
-            </span>
+            <input id="desc" class="input" type="text" v-model="desc" placeholder="John Doe is a person that..." />
+            <span class="icon is-small is-left"><font-awesome-icon :icon="['fas', 'comment']" /></span>
           </p>
         </div>
       </section>
@@ -207,11 +149,6 @@ async function confirm() {
 </template>
 
 <style scoped>
-.modal.is-active {
-  display: block;
-}
-
-.modal-background {
-  background: rgba(0, 0, 0, 0.5);
-}
+.modal.is-active { display: block; }
+.modal-background { background: rgba(0, 0, 0, 0.5); }
 </style>
