@@ -1,11 +1,17 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import ModalComponent from '@/components/modal.vue'
 
 const users = ref([])
 const modalTitle = ref('Add User')
 const isModalOpen = ref(false)
 const selectedUser = ref(null)
+
+watch( () => isModalOpen.value, () => {
+  if (isModalOpen.value === false) {
+    fetchUsers()
+  }
+})
 
 const fetchUsers = async () => {
   try {
