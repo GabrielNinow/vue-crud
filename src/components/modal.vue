@@ -23,7 +23,11 @@ const name = ref('')
 const email = ref('')
 const tel = ref('')
 const desc = ref('')
+const emailError = ref('')
+const nameError = ref('')
+const telError = ref('')
 
+// Watcher para atualizar os campos com o usuário selecionado
 watch(
   () => props.selectedUser,
   user => {
@@ -41,15 +45,55 @@ watch(
   },
 )
 
+// Funções de validação
+function validateEmail(value: string) {
+  const emailPattern = /.+@.+\..+/;
+  return emailPattern.test(value);
+}
+
+function validateName(value: string) {
+  const namePattern = /^[a-zA-Z\s]+$/; // Apenas letras e espaços
+  return namePattern.test(value);
+}
+
+function validateTel(value: string) {
+  const telPattern = /^[0-9]+$/; // Apenas números
+  return telPattern.test(value);
+}
+
 function close() {
   emit('update:isVisible', false)
   name.value = ''
   email.value = ''
   tel.value = ''
   desc.value = ''
+  emailError.value = ''
+  nameError.value = ''
+  telError.value = ''
 }
 
 async function confirm() {
+  emailError.value = '';
+  nameError.value = '';
+  telError.value = '';
+
+  // Validações
+  if (!validateEmail(email.value)) {
+    emailError.value = 'Por favor, insira um email válido.';
+  }
+
+  if (!validateName(name.value)) {
+    nameError.value = 'O nome não pode conter números.';
+  }
+
+  if (!validateTel(tel.value)) {
+    telError.value = 'O telefone deve conter apenas números.';
+  }
+
+  if (emailError.value || nameError.value || telError.value) {
+    return; // Não prosseguir se houver erros
+  }
+
   const formData = {
     name: name.value,
     email: email.value,
@@ -94,11 +138,13 @@ async function confirm() {
               type="text"
               v-model="name"
               placeholder="John Doe"
+              required
             />
             <span class="icon is-small is-left">
               <font-awesome-icon :icon="['fas', 'user']" />
             </span>
           </p>
+          <p class="help is-danger" v-if="nameError">{{ nameError }}</p>
         </div>
         <div class="field">
           <label for="email" class="label">Email</label>
@@ -109,11 +155,13 @@ async function confirm() {
               type="email"
               v-model="email"
               placeholder="Johndoe@mail.com"
+              required
             />
             <span class="icon is-small is-left">
               <font-awesome-icon :icon="['fas', 'envelope']" />
             </span>
           </p>
+          <p class="help is-danger" v-if="emailError">{{ emailError }}</p>
         </div>
         <div class="field">
           <label for="tel" class="label">Telephone</label>
@@ -124,11 +172,13 @@ async function confirm() {
               type="tel"
               v-model="tel"
               placeholder="+99 (99) 99999-9999"
+              required
             />
             <span class="icon is-small is-left">
               <font-awesome-icon :icon="['fas', 'phone']" />
             </span>
           </p>
+          <p class="help is-danger" v-if="telError">{{ telError }}</p>
         </div>
         <div class="field">
           <label for="desc" class="label">Description</label>
